@@ -1,0 +1,35 @@
+use("my-database");
+db.old_collection.aggregate([
+    { $match: {
+        "date": { 
+            $gte: ISODate("2023-01-01"),
+            $lt: ISODate("2023-02-01")
+        },
+        "document.user_id": {
+            $exists: true
+        }
+    }},
+    { $project: {
+        _id: 0,
+        user_id: {
+            $convert: {
+                input: "$document.user_id",
+                to: "string",
+                onError: null,
+                onNull: null
+        }},
+        birth_date: {
+            $ifNull: [ "$birth_date", null ]
+        },
+        height: {
+            $convert: {
+                input: "$height",
+                to: "long",
+                onError: null,
+                onNull: null
+        }},
+    }},
+    { $merge: {
+        into: "new_collection"
+    }}
+]);
